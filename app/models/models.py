@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, UUID, String, Boolean, DateTime, ForeignKey, Float
+from sqlalchemy import Column, UUID, String, Boolean, DateTime, ForeignKey, Float, Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from uuid import uuid4
@@ -47,3 +47,16 @@ class Transaction(Base):
     amount = Column(Float, nullable=False)
     category = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+
+class Task(Base):
+    """ Represents a task: Used to manage long-running tasks """
+    __tablename__ = 'task'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    status = Column(String, nullable=False)
+    triggered_by = Column(Integer, nullable=False)
+    task_name = Column(String, nullable=True)
+    details = Column(String, nullable=True)
+    created_date = Column(DateTime, default=datetime.now)
+    updated_date = Column(DateTime, default=datetime.now, onupdate=datetime.now)
