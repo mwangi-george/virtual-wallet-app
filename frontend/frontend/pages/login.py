@@ -1,5 +1,5 @@
 import reflex as rx
-from ..state.auth import AuthState
+from frontend.states.auth import AuthState
 
 
 @rx.page(route="/login", title="Login")

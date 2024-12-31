@@ -1,16 +1,18 @@
 import requests
 
+from frontend.core.settings import settings
 
-def login_to_api():
-    url = "/api/v1/auth/login"
+
+def login_to_api(email, password):
+    url = f"{settings.BACKEND_DOMAIN}/api/v1/auth/login"
     headers = {
         "accept": "application/json",
         "Content-Type": "application/x-www-form-urlencoded"
     }
     data = {
         "grant_type": "",
-        "username": "user1@gmail.com",
-        "password": "zxcv",
+        "username": email,
+        "password": password,
         "scope": "",
         "client_id": "",
         "client_secret": ""
