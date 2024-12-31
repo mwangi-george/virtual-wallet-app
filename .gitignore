@@ -172,4 +172,7 @@ cython_debug/
 
 
 # Alembic files
-backend/alembic.ini
+alembic.ini
+
+# App logs
+logs.txt
