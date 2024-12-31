@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import User
 from ..core import get_db, RoleChecker
@@ -34,9 +34,10 @@ def create_admin_router() -> APIRouter:
         return user
 
     @router.post("/add-user", response_model=ConfirmAction, status_code=status.HTTP_201_CREATED)
-    async def add_user(data: CreateUser, user: User = Depends(RoleChecker(["admin", "master-admin"])),
+    async def add_user(data: CreateUser, bg_tasks: BackgroundTasks,
+                       user: User = Depends(RoleChecker(["admin", "master-admin"])),
                        db: AsyncSession = Depends(get_db)):
-        response = await user_services.create_user(data, db)
+        response = await user_services.create_user(data, db, bg_tasks)
         response_formatted = ConfirmAction(message=response)
         return response_formatted
 
@@ -50,7 +51,7 @@ def create_admin_router() -> APIRouter:
     @router.put("/update-user-role", response_model=UserData, status_code=status.HTTP_201_CREATED)
     async def change_user_role(data: RoleChangeRequest, user: User = Depends(RoleChecker(["master-admin"])),
                                db: AsyncSession = Depends(get_db)):
-        user = admin_services.modify_user_role(data, db)
+        user = await admin_services.modify_user_role(data, db)
         return user
 
     return router

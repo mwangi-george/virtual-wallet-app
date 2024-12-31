@@ -66,7 +66,7 @@ class UserServices:
                 },
                 redirect_to=confirmation_link,
                 button_label="Activate Account",
-                email_template="activate_account.html",
+                email_template="account_verification_email.html",
             )
 
             logger.info(f"Created new user with email {user.email}")
@@ -82,7 +82,7 @@ class UserServices:
 
     @staticmethod
     async def verify_user(token: str, db: AsyncSession):
-        email = security.validate_token(token, db)
+        email = security.validate_token(token)
         user = await security.get_user(email, db)
 
         try:
