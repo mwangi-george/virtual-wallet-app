@@ -1,5 +1,5 @@
 import reflex as rx
-from ..state.auth import AuthState
+# from ..state.auth import AuthState
 
 
 @rx.page(route="/signup", title="Signup")
@@ -41,8 +41,8 @@ def signup_page() -> rx.Component:
                                     size="3",
                                     width="100%",
                                     required=True,
-                                    value=AuthState.first_name,
-                                    on_change=AuthState.set_first_name,
+                                    # value=AuthState.first_name,
+                                    # on_change=AuthState.set_first_name,
                                 ),
                                 justify="center",
                                 spacing="3",
@@ -64,8 +64,8 @@ def signup_page() -> rx.Component:
                                     size="3",
                                     width="100%",
                                     required=True,
-                                    value=AuthState.last_name,
-                                    on_change=AuthState.set_last_name,
+                                    # value=AuthState.last_name,
+                                    # on_change=AuthState.set_last_name,
                                 ),
                                 justify="center",
                                 spacing="3",
@@ -87,8 +87,8 @@ def signup_page() -> rx.Component:
                                     size="3",
                                     width="100%",
                                     required=True,
-                                    value=AuthState.email,
-                                    on_change=AuthState.set_email,
+                                    # value=AuthState.email,
+                                    # on_change=AuthState.set_email,
                                 ),
                                 justify="center",
                                 spacing="3",
@@ -109,8 +109,8 @@ def signup_page() -> rx.Component:
                                     size="3",
                                     width="100%",
                                     required=True,
-                                    value=AuthState.password,
-                                    on_change=AuthState.set_password,
+                                    # value=AuthState.password,
+                                    # on_change=AuthState.set_password,
                                 ),
                                 justify="center",
                                 spacing="3",
@@ -131,8 +131,8 @@ def signup_page() -> rx.Component:
                                     size="3",
                                     width="100%",
                                     required=True,
-                                    value=AuthState.confirm_password,
-                                    on_change=AuthState.set_confirm_password,
+                                    # value=AuthState.confirm_password,
+                                    # on_change=AuthState.set_confirm_password,
                                 ),
                                 justify="center",
                                 spacing="3",
@@ -147,7 +147,7 @@ def signup_page() -> rx.Component:
                             ),
                         ),
                         spacing="9",
-                        on_submit=AuthState.signup
+                        # on_submit=AuthState.signup
                     ),
                     rx.center(
                         rx.text("Already registered?", size="3"),

@@ -11,3 +11,4 @@ app = rx.App(
                 radius="large", accent_color="red")
 )
 app.add_page(home_page)
+app.add_page(signup_page)
