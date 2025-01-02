@@ -9,10 +9,12 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from sqlalchemy.future import select
+from cryptography.fernet import Fernet, InvalidToken
 
 from ..models import User
 from .database import get_db
 from .logs import create_logger
+from .config import settings
 
 load_dotenv()
 
@@ -42,6 +44,36 @@ class Security:
             msg = f"Unable to hash password: {str(e)}"
             logger.error(msg)
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=msg)
+
+    @staticmethod
+    def generate_encryption_key() -> bytes:
+        """Generate a new Fernet key. This should be done once"""
+        key = Fernet.generate_key()
+        return key
+
+    @staticmethod
+    def encrypt_text(text: str) -> str:
+        f = Fernet(settings.BACKEND_SECRET_KEY)
+        try:
+            encrypted_text = f.encrypt(text.encode('utf-8'))
+            return encrypted_text.decode('utf-8')
+        except Exception as e:
+            logging.error(f"Encryption failed: {e}")
+            raise ValueError("Failed to encrypt the text.")
+
+    @staticmethod
+    def decrypt_text(encrypted_text: str) -> str:
+        f = Fernet(settings.BACKEND_SECRET_KEY)
+
+        try:
+            decrypted_text = f.decrypt(encrypted_text)
+            return decrypted_text.decode('utf-8')
+        except InvalidToken:
+            logging.error("Invalid encryption key or tampered ciphertext.")
+            raise ValueError("Failed to decrypt the text.")
+        except Exception as e:
+            logging.error(f"Decryption failed: {e}")
+            raise ValueError("An unexpected error occurred during decryption.")
 
     @staticmethod
     def verify_password(password: str, hashed_password: str) -> bool:

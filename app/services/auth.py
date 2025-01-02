@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status, BackgroundTasks
 
 from ..models import User, Wallet
-from ..schemas.user import CreateUser
-from ..core import security, create_logger, send_email
+from ..schemas.auth import CreateUser
+from ..core import security, create_logger, email_services, settings
 
 # set up logging
 logger = create_logger(__name__, logging.ERROR)
@@ -54,19 +54,13 @@ class AuthServices:
 
             # send email to complete registration
             reset_token = security.create_access_token(data={'sub': new_user.email})
-            confirmation_link = f"http://127.0.0.1:8000/api/v1/auth/verify-account?token={reset_token}"
+            confirmation_link = f"{settings.BACKEND_DOMAIN}/api/v1/auth/verify-account?token={reset_token}"
 
             bg_tasks.add_task(
-                func=send_email,
-                recipient=str(new_user.email),
+                func=email_services.send_email_with_brevo,
+                recipient=new_user.email,
                 subject="Activate your Account",
-                email_body_data={
-                    "greeting": f"Hello {new_user.name},",
-                    "message_body": "Click the button below to activate your account",
-                },
-                redirect_to=confirmation_link,
-                button_label="Activate Account",
-                email_template="account_verification_email.html",
+                body=email_services.generate_account_verification_email(new_user, confirmation_link),
             )
 
             logger.info(f"Created new user with email {user.email}")
@@ -85,6 +79,11 @@ class AuthServices:
         email = security.validate_token(token)
         user = await security.get_user(email, db)
 
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token"
+            )
         try:
             if user.verified:
                 return f"'{user.email}' is already verified"

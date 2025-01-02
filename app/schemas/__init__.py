@@ -1,1 +1,1 @@
-from .user import ConfirmAction
+from .auth import ConfirmAction

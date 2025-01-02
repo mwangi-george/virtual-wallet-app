@@ -1,58 +1,210 @@
-import os
+import logging
 import json
 import requests
-import resend
-from jinja2 import Environment, FileSystemLoader
-
+from fastapi import HTTPException, status
 from .config import settings
+from ..models import User
+from .logs import create_logger
 
-# Set up Jinja2 environment
-templates_dir = os.path.join(os.getcwd(), "templates")
-jinja_env = Environment(loader=FileSystemLoader(templates_dir))
+logger = create_logger(__name__, logging.ERROR)
 
 
-def send_email(recipient: str, subject: str, email_body_data: dict,
-               redirect_to: str | None, button_label: str, email_template: str):
-    """ Custom function for sending an email with an HTML template """
-    url = "https://api.brevo.com/v3/smtp/email"
+class EmailServices:
 
-    # Load and render the template with provided data
-    template = jinja_env.get_template(email_template)
-    email_body_data['redirect_to'] = redirect_to
-    email_body_data['button_label'] = button_label
-    email_body = template.render(subject=subject, **email_body_data)
+    @staticmethod
+    def send_email_with_brevo(recipient: str, subject: str, body: str):
+        # BREVO email sending url
+        url = "https://api.brevo.com/v3/smtp/email"
 
-    # Define the payload
-    payload = json.dumps(
-        {
-            "sender": {"name": "VMS Team", "email": settings.BREVO_EMAIL},
-            "to": [{"email": recipient}],
-            "subject": subject,
-            "htmlContent": email_body  # Use htmlContent for HTML emails
+        # Define the payload
+        payload = json.dumps(
+            {
+                "sender": {"name": "VMS Team", "email": settings.BREVO_EMAIL},
+                "to": [{"email": recipient}],
+                "subject": subject,
+                "htmlContent": body  # Use htmlContent for HTML emails
+            }
+        )
+
+        # Define headers
+        headers = {
+            "accept": "application/json",
+            "api-key": settings.BREVO_API_KEY,
+            "content-type": "application/json",
         }
-    )
 
-    # Define headers
-    headers = {
-        "accept": "application/json",
-        "api-key": settings.BREVO_API_KEY,
-        "content-type": "application/json",
-    }
+        # Make the POST request
+        response = requests.post(url, headers=headers, data=payload)
 
-    # Make the POST request
-    response = requests.post(url, headers=headers, data=payload)
-    print(response.text)
+        if response.status_code != status.HTTP_201_CREATED:
+            logger.error(response.text)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Error sending email to {recipient}"
+            )
+
+    @staticmethod
+    def generate_account_removal_request_email_body(user: User):
+        user_name = user.name if user.name else user.email
+        return f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <div style="max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; padding: 20px; 
+                border-radius: 8px; background-color: #f9f9f9;">
+                    <h2 style="color: #333;">Account Removal Request Received</h2>
+                    <p>Hello {user_name},</p>
+                    <p>We have received your request to remove your account from our platform. Please note the following:</p>
+                    <ol>
+                        <li>
+                            <strong>Step 1: Account Deactivation</strong><br>
+                            Your account will first be deactivated. This means you will no longer have access to the platform, 
+                            but your data will remain intact in case you decide to reactivate your account within the next 
+                            <strong>90 days</strong>. During this period, your personal data will be anonymized in line with our 
+                            privacy policy.
+                        </li>
+                        <li>
+                            <strong>Step 2: Permanent Removal</strong><br>
+                            After 90 days, all your data will be permanently removed from our systems and will no longer be recoverable.
+                        </li>
+                    </ol>
+                    <p>If you have any questions or if this request was made in error, please contact our support team immediately 
+                    at <a href="mailto:{settings.SYSTEM_SUPPORT_EMAIL}">{settings.SYSTEM_SUPPORT_EMAIL}</a>.</p>
+                    <p>Thank you for being a valued part of our community.</p>
+                    <p>Best regards,</p>
+                    <p><strong>The VWS Team</strong></p>
+                </div>
+            </body>
+        </html>
+        """
+
+    @staticmethod
+    def generate_account_verification_email(user: User, verification_link: str):
+        user_name = user.name if user.name else user.email
+        return f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <div style="max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; padding: 20px; 
+                border-radius: 8px; background-color: #f9f9f9;">
+                    <h2 style="color: #333;">Verify Your Account</h2>
+                    <p>Hello {user_name},</p>
+                    <p>Thank you for signing up with us! To complete your registration and activate your account, 
+                    please verify your email address by clicking the button below:</p>
+                    <p style="text-align: center; margin: 20px 0;">
+                        <a href="{verification_link}" style="
+                            display: inline-block;
+                            background-color: #007BFF;
+                            color: white;
+                            text-decoration: none;
+                            padding: 10px 20px;
+                            border-radius: 5px;
+                            font-size: 16px;
+                        ">Verify My Account</a>
+                    </p>
+                    <p>If the button above doesn’t work, copy and paste the following link into your browser:</p>
+                    <p><a href="{verification_link}" style="word-break: break-all;">{verification_link}</a></p>
+                    <p>If you did not sign up for an account, please ignore this email or contact our support team at 
+                    <a href="mailto:{settings.SYSTEM_SUPPORT_EMAIL}">{settings.SYSTEM_SUPPORT_EMAIL}</a>.</p>
+                    <p>Thank you for joining us!</p>
+                    <p>Best regards,</p>
+                    <p><strong>The VWS Team</strong></p>
+                </div>
+            </body>
+        </html>
+        """
+
+    @staticmethod
+    def generate_account_deletion_success_email_body(user_email: str) -> str:
+        """
+        Generates an HTML string to notify the user that their account has been deleted successfully.
+
+        Args:
+            user_email (str): The name of the user to personalize the notification.
+
+        Returns:
+            str: A formatted HTML string.
+        """
+        return f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; background-color: #f9f9f9; padding: 20px;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #fff; border-radius: 8px; 
+                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 20px;">
+                    <h2 style="color: #333;">Account Deletion Confirmation</h2>
+                    <p>Hello {user_email},</p>
+                    <p>We are writing to confirm that your account has been successfully deleted from our platform.</p>
+                    <p>As part of this process, all your data has been removed in accordance 
+                    with our privacy policy.</p>
+                    <p>If you did not request this action or have any concerns, 
+                    please contact our support team immediately at 
+                    <a href="mailto:{settings.SYSTEM_SUPPORT_EMAIL}">{settings.SYSTEM_SUPPORT_EMAIL}</a>.</p>
+                    <p>Thank you for being a part of our community, and we wish you all the best.</p>
+                    <p>Best regards,</p>
+                    <p><strong>The VWS Team</strong></p>
+                </div>
+            </body>
+        </html>
+        """
+
+    @staticmethod
+    def generate_account_activation_email_body(user_email: str) -> str:
+        """
+        Generates an HTML string to notify the user that their account has been activated successfully.
+
+        Args:
+            user_email (str): The email of the user to personalize the notification.
+
+        Returns:
+            str: A formatted HTML string.
+        """
+        return f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; background-color: #f9f9f9; padding: 20px;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #fff; border-radius: 8px; 
+                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 20px;">
+                    <h2 style="color: #333;">Account Activation Successful</h2>
+                    <p>Hello {user_email},</p>
+                    <p>We’re excited to inform you that your account has been successfully activated. 
+                    You can now access all the features and benefits of our platform.</p>
+                    <p>If you have any questions or need assistance, feel free to reach out to our support team at 
+                    <a href="mailto:{settings.SYSTEM_SUPPORT_EMAIL}">{settings.SYSTEM_SUPPORT_EMAIL}</a>.</p>
+                    <p>Welcome aboard!</p>
+                    <p>Best regards,</p>
+                    <p><strong>The VWS Team</strong></p>
+                </div>
+            </body>
+        </html>
+        """
+
+    @staticmethod
+    def generate_account_deactivation_email_body(user_email: str) -> str:
+        """
+        Generates an HTML string to notify the user that their account has been deactivated.
+
+        Args:
+            user_email (str): The email of the user to personalize the notification.
+
+        Returns:
+            str: A formatted HTML string.
+        """
+        return f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6; background-color: #f9f9f9; padding: 20px;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #fff; border-radius: 8px; 
+                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 20px;">
+                    <h2 style="color: #333;">Account Deactivation Notice</h2>
+                    <p>Hello {user_email},</p>
+                    <p>We would like to inform you that your account has been deactivated. 
+                    This means that you will no longer be able to access your account or its associated services.</p>
+                    <p>As part of this process, all your personal data has been anonymized in accordance 
+                    with our privacy policy.</p>
+                    <p>If you believe this action was taken in error or would like to reactivate your account, 
+                    please contact our support team at <a href="mailto:{settings.SYSTEM_SUPPORT_EMAIL}">{settings.SYSTEM_SUPPORT_EMAIL}</a>.</p>
+                    <p>Thank you for your understanding.</p>
+                    <p>Best regards,</p>
+                    <p><strong>The VWS Team</strong></p>
+                </div>
+            </body>
+        </html>
+        """
 
 
-def send_email_with_resend(recipient: str, subject: str, body: str):
-    resend.api_key = settings.RESEND_API_KEY
-
-    params = {
-        "from": "VWS Team <vws-team@resend.dev>",
-        "to": [recipient],
-        "subject": subject,
-        "html": body
-    }
-
-    email = resend.Emails.send(params)
-    print(email)
+email_services = EmailServices()

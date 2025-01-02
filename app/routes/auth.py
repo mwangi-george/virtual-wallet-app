@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..schemas.user import CreateUser, ConfirmAction, TokenData
+from ..schemas.auth import CreateUser, ConfirmAction, TokenData
 from ..services.auth import auth_services
 from ..core import get_db
 

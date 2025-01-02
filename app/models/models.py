@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, UUID, String, Boolean, DateTime, ForeignKey, Float, Integer
+from sqlalchemy import Column, UUID, String, Boolean, DateTime, ForeignKey, Float, Integer, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from uuid import uuid4
@@ -69,4 +69,5 @@ class AccountRemovalRequest(Base):
     id = Column(UUID, primary_key=True, default=uuid4, index=True)
     user_id = Column(UUID, ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
     request_timestamp = Column(DateTime, default=datetime.now)
-    status = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="Pending")
+    details = Column(String(100), nullable=True)
