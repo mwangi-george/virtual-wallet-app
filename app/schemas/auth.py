@@ -24,3 +24,18 @@ class TokenData(BaseModel):
 
 class ConfirmAction(BaseModel):
     message: str | None
+
+
+class UpdateUserPassword(BaseModel):
+    token: str
+    new_password: str
+
+    class Config:
+        from_attributes = True
+        json_schema_extra = {
+            "example": {
+                "token": f"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJnZW9yZ2VfbXdhbmdpQGluc3VwcGx5aGVhbHRoLmN"
+                         f"vbSIsImV4cCI6MTczNTg2NDYxNn0.UQl3Efa0pU1nncJfUz7qoRvgo3t4BcdiqFw8011sZ0e",
+                "new_password": "zxcv",
+            }
+        }

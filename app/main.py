@@ -23,7 +23,7 @@ def create_app_entrypoint() -> FastAPI:
                     f"transferring, and withdrawing funds. Coupled with spending analytics, "
                     f"this system categorizes expenses and provides insights to help users track "
                     f"and manage their money more effectively.",
-        version="0.1.0",
+        version="1.0.1",
         contact={
             "name": "Mwangi George",
             "email": "mwangigeorge648@gmail.com",

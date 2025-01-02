@@ -206,5 +206,47 @@ class EmailServices:
         </html>
         """
 
+    @staticmethod
+    def generate_password_reset_email_body(user_name: str, reset_link: str) -> str:
+        """
+        Generates an HTML string to notify the user that their password reset request has been received.
+
+        Args:
+            user_name (str): The name of the user to personalize the notification.
+            reset_link (str): The link to reset the user's password. The link should redirect to a frontend page where the user enters their new password.
+
+        Return:
+            str: A formatted HTML string.
+        """
+        return f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <div style="max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; padding: 20px; 
+                border-radius: 8px; background-color: #f9f9f9;">
+                    <h2 style="color: #333;">Password Reset Request</h2>
+                    <p>Hello {user_name},</p>
+                    <p>We received a request to reset your password. You can reset your password by clicking the button below:</p>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <a href="{reset_link}" style="
+                            display: inline-block;
+                            padding: 10px 20px;
+                            color: white;
+                            background-color: #007BFF;
+                            text-decoration: none;
+                            border-radius: 5px;
+                            font-size: 16px;
+                            font-weight: bold;
+                        ">Reset Password</a>
+                    </div>
+                    <p>If the button above doesn't work, copy and paste the following link into your browser:</p>
+                    <p><a href="{reset_link}" style="word-wrap: break-word;">{reset_link}</a></p>
+                    <p>If you did not request a password reset, please ignore this email or contact our support team for assistance.</p>
+                    <p>Thank you,</p>
+                    <p><strong>The VWS Team</strong></p>
+                </div>
+            </body>
+        </html>
+        """
+
 
 email_services = EmailServices()

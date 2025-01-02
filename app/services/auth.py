@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status, BackgroundTasks
 
 from ..models import User, Wallet
-from ..schemas.auth import CreateUser
+from ..schemas.auth import CreateUser, UpdateUserPassword
 from ..core import security, create_logger, email_services, settings
 
 # set up logging
@@ -114,6 +114,29 @@ class AuthServices:
         access_token = security.create_access_token(data={"sub": user.email})
         logger.info(f"Logged in user with email {user.email}")
         return {"access_token": access_token, "token_type": "Bearer"}
+
+    @staticmethod
+    async def update_user_password(data: UpdateUserPassword, db: AsyncSession):
+        user_email = security.validate_token(data.token)
+
+        user = await security.get_user(user_email, db)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        try:
+            user.password_hash = security.get_password_hash(data.new_password)
+            await db.commit()
+            return f"Password updated successfully"
+        except Exception as e:
+            await db.rollback()
+            logger.error(e)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error during password update. Please contact support."
+            )
 
 
 # instantiate the class

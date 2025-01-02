@@ -14,7 +14,7 @@ from ..services.wallet import wallet_services
 
 
 def create_wallet_router() -> APIRouter:
-    router = APIRouter(prefix="/api/v1/wallet", tags=["Transactions"])
+    router = APIRouter(prefix="/api/v1/wallet", tags=["Wallet Operations"])
 
     @router.post("/deposit", response_model=DepositResponse, status_code=status.HTTP_201_CREATED,
                  name="Deposit", description="Deposit Funds to user's wallet")

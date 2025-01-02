@@ -3,14 +3,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from ..models import User
 from ..core import get_db, RoleChecker
-from ..schemas.admin import Users, UserData, StatusChangeRequest, RoleChangeRequest, AccountRemovalRequests
+from ..schemas.admin import Users, UserData, RoleChangeRequest, AccountRemovalRequests
 from ..schemas.auth import CreateUser, ConfirmAction
 from ..services.auth import auth_services
 from ..services.admin import admin_services
 
 
 def create_admin_router() -> APIRouter:
-    router = APIRouter(prefix="/api/v1", tags=["Admin"])
+    router = APIRouter(prefix="/api/v1", tags=["Admin Actions"])
 
     @router.get("/fetch-users", response_model=Users, status_code=status.HTTP_200_OK)
     async def get_users(start: int = 0,

@@ -126,7 +126,7 @@ class Security:
         try:
             payload = jwt.decode(token, self.JWT_SECRET_KEY, algorithms=[self.ALGORITHM])
             email: str = payload.get('sub')
-            if email is None:
+            if not email:
                 raise self.credentials_exception
             return email
         except JWTError:
