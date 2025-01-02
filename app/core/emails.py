@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import resend
 from jinja2 import Environment, FileSystemLoader
 
 from .config import settings
@@ -41,3 +42,17 @@ def send_email(recipient: str, subject: str, email_body_data: dict,
     # Make the POST request
     response = requests.post(url, headers=headers, data=payload)
     print(response.text)
+
+
+def send_email_with_resend(recipient: str, subject: str, body: str):
+    resend.api_key = settings.RESEND_API_KEY
+
+    params = {
+        "from": "VWS Team <vws-team@resend.dev>",
+        "to": [recipient],
+        "subject": subject,
+        "html": body
+    }
+
+    email = resend.Emails.send(params)
+    print(email)

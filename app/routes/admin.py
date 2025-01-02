@@ -4,7 +4,7 @@ from ..models import User
 from ..core import get_db, RoleChecker
 from ..schemas.admin import Users, UserData, StatusChangeRequest, RoleChangeRequest
 from ..schemas.user import CreateUser, ConfirmAction
-from ..services.user import user_services
+from ..services.auth import auth_services
 from ..services.admin import admin_services
 
 
@@ -37,7 +37,7 @@ def create_admin_router() -> APIRouter:
     async def add_user(data: CreateUser, bg_tasks: BackgroundTasks,
                        user: User = Depends(RoleChecker(["admin", "master-admin"])),
                        db: AsyncSession = Depends(get_db)):
-        response = await user_services.create_user(data, db, bg_tasks)
+        response = await auth_services.create_user(data, db, bg_tasks)
         response_formatted = ConfirmAction(message=response)
         return response_formatted
 

@@ -5,9 +5,8 @@ from app.routes import (
     auth_router,
     wallet_router,
     analytics_router,
+    user_router,
 )
-
-import asyncpg
 
 # Allowed frontends will be specified here
 origins = [
@@ -48,6 +47,7 @@ def create_app_entrypoint() -> FastAPI:
     app.include_router(auth_router())
     app.include_router(wallet_router())
     app.include_router(analytics_router())
+    app.include_router(user_router())
     app.include_router(admin_router())
 
     return app

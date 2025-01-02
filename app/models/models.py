@@ -60,3 +60,13 @@ class Task(Base):
     details = Column(String, nullable=True)
     created_date = Column(DateTime, default=datetime.now)
     updated_date = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+
+class AccountRemovalRequest(Base):
+    """ Represents a request to removal account """
+    __tablename__ = 'account_removal_request'
+
+    id = Column(UUID, primary_key=True, default=uuid4, index=True)
+    user_id = Column(UUID, ForeignKey('user.id', ondelete="CASCADE"), nullable=False)
+    request_timestamp = Column(DateTime, default=datetime.now)
+    status = Column(String, nullable=False)
