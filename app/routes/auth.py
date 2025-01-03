@@ -11,6 +11,62 @@ from ..core import get_db, settings
 
 
 def create_auth_router() -> APIRouter:
+    """
+   Create and configure the authentication router for user authentication and account management.
+
+   The authentication router provides endpoints for user signup, login, account verification,
+   password reset, and related operations. It also includes static files and templates for HTML responses.
+
+   Returns:
+       APIRouter: Configured router for authentication-related actions.
+
+   Routes:
+       - **POST /signup**:
+           Registers a new user.
+           Parameters:
+               - `user` (CreateUser): User registration data.
+           Permissions: Open to all.
+           Response: `ConfirmAction` with a success message.
+
+       - **GET /verify-account**:
+           Verifies a user's account using a token.
+           Parameters:
+               - `token` (str): The verification token.
+           Permissions: Open to all.
+           Response: HTML page indicating verification success.
+
+       - **POST /login**:
+           Logs a user into the system.
+           Parameters:
+               - `user_data` (OAuth2PasswordRequestForm): User credentials (username and password).
+           Permissions: Open to all.
+           Response: `TokenData` with access and refresh tokens.
+
+       - **GET /forms/password-reset**:
+           Serves an HTML form for password reset.
+           Permissions: Open to all.
+           Response: HTML form for password update.
+
+       - **POST /update-user-password**:
+           Updates a user's password.
+           Parameters:
+               - `data` (UpdateUserPassword): Password update data.
+           Permissions: Open to all.
+           Response: `ConfirmAction` with a success message.
+
+       - **GET /password-update-confirm**:
+           Serves an HTML page confirming password update.
+           Permissions: Open to all.
+           Response: HTML confirmation page.
+
+   Static Resources:
+       - **/static**: Serves static files from the `static` directory.
+
+   Templates:
+       - HTML templates served from the `templates` directory for account verification
+         and password update confirmation.
+
+   """
     router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 
     # referencing the directory with static files

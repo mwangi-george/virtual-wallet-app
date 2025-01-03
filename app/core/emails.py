@@ -10,9 +10,22 @@ logger = create_logger(__name__, logging.ERROR)
 
 
 class EmailServices:
+    """ Handles mail services including functions to send emails and generating html templates for each email."""
 
     @staticmethod
-    def send_email_with_brevo(recipient: str, subject: str, body: str):
+    def send_email_with_brevo(recipient: str, subject: str, body: str) -> None:
+        """
+        Sends an email via the BREVO API.
+
+        Args:
+            recipient (str): The recipient's email address.
+            subject (str): The subject of the email.
+            body (str): The HTML content of the email body.
+
+        Raises:
+            HTTPException: If the email fails to send or if there is an error with the request, an HTTP 400 exception is raised.
+        """
+
         # BREVO email sending url
         url = "https://api.brevo.com/v3/smtp/email"
 
@@ -45,6 +58,15 @@ class EmailServices:
 
     @staticmethod
     def generate_account_removal_request_email_body(user: User):
+        """
+        Generates an HTML string to notify the user that a request has been received to delete their account.
+
+        Args:
+            user (User): The name of the user to personalize the notification.
+
+        Returns:
+            str: A formatted HTML string.
+        """
         user_name = user.name if user.name else user.email
         return f"""
         <html>
@@ -79,6 +101,17 @@ class EmailServices:
 
     @staticmethod
     def generate_account_verification_email(user: User, verification_link: str):
+        """
+        Generates an HTML string to notify the user that their account has been created
+        successfully and that they need to verify their email.
+
+        Args:
+            user (User): The name of the user to personalize the notification.
+            verification_link (str): The link to process verification.
+
+        Returns:
+            str: A formatted HTML string.
+        """
         user_name = user.name if user.name else user.email
         return f"""
         <html>

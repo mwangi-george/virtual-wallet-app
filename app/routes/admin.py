@@ -10,6 +10,72 @@ from ..services.admin import admin_services
 
 
 def create_admin_router() -> APIRouter:
+    """
+    Create and configure the admin router for handling administrative actions.
+
+    The admin router provides endpoints for managing user accounts and administrative tasks.
+    The endpoints are protected with role-based access control, ensuring only authorized users
+    with the roles "admin" or "master-admin" can access them.
+
+    Returns:
+        APIRouter: Configured router for admin-related actions.
+
+    Routes:
+        - **GET /fetch-users**:
+            Fetches a paginated list of users.
+            Parameters:
+                - `start` (int, default=0): Pagination start index.
+                - `limit` (int, default=20): Number of users to fetch.
+            Permissions: ["admin", "master-admin"]
+            Response: `Users` object containing user data.
+
+        - **GET /fetch-user**:
+            Fetches details of a single user by email.
+            Parameters:
+                - `email` (str): The email address of the user.
+            Permissions: ["admin", "master-admin"]
+            Response: `UserData` object containing user information.
+
+        - **PUT /activate-user-account**:
+            Activates a user's account by user ID.
+            Parameters:
+                - `user_id` (UUID): The unique ID of the user.
+            Permissions: ["admin", "master-admin"]
+            Response: `ConfirmAction` with a success message.
+
+        - **PUT /deactivate-user-account**:
+            Deactivates a user's account by user ID.
+            Parameters:
+                - `user_id` (UUID): The unique ID of the user.
+            Permissions: ["master-admin"]
+            Response: `ConfirmAction` with a success message.
+
+        - **POST /add-user**:
+            Adds a new user to the system.
+            Parameters:
+                - `data` (CreateUser): The user creation data.
+            Permissions: ["admin", "master-admin"]
+            Response: `ConfirmAction` with a success message.
+
+        - **DELETE /remove-user**:
+            Permanently removes a deactivated user account by user ID.
+            Parameters:
+                - `user_id` (UUID): The unique ID of the user.
+            Permissions: ["master-admin"]
+            Response: `ConfirmAction` with a success message.
+
+        - **PUT /update-user-role**:
+            Updates a user's role in the system.
+            Parameters:
+                - `data` (RoleChangeRequest): The role change request details.
+            Permissions: ["master-admin"]
+            Response: `UserData` object with updated user information.
+
+        - **GET /account-removal-requests**:
+            Retrieves pending account removal requests.
+            Permissions: ["admin", "master-admin"]
+            Response: `AccountRemovalRequests` containing the list of requests.
+    """
     router = APIRouter(prefix="/api/v1", tags=["Admin Actions"])
 
     @router.get("/fetch-users", response_model=Users, status_code=status.HTTP_200_OK)

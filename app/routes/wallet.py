@@ -14,6 +14,50 @@ from ..services.wallet import wallet_services
 
 
 def create_wallet_router() -> APIRouter:
+    """
+    Create and configure the wallet router for handling wallet operations.
+
+    The wallet router provides endpoints for wallet-related operations such as deposits, withdrawals,
+    fund transfers, transactions, and checking the wallet balance. These endpoints require the user
+    to be authenticated.
+
+    Returns:
+        APIRouter: Configured router for wallet operations.
+
+    Routes:
+        - **POST /deposit**:
+            Deposits funds into the user's wallet.
+            Parameters:
+                - `data` (DepositRequest): Deposit details, including amount.
+            Permissions: User must be authenticated.
+            Response: `DepositResponse` with details of the transaction.
+
+        - **POST /withdraw**:
+            Withdraws funds from the user's wallet.
+            Parameters:
+                - `data` (WithdrawRequest): Withdrawal details, including amount.
+            Permissions: User must be authenticated.
+            Response: `WithdrawalResponse` with details of the transaction.
+
+        - **POST /transfer**:
+            Transfers funds from the user's wallet to another user's wallet.
+            Parameters:
+                - `data` (TransferRequest): Transfer details, including recipient and amount.
+            Permissions: User must be authenticated.
+            Response: `TransferResponse` with details of the transaction.
+
+        - **POST /transact**:
+            Performs a transaction using the user's wallet (e.g., payment for goods or services).
+            Parameters:
+                - `data` (PurchaseRequest): Transaction details.
+            Permissions: User must be authenticated.
+            Response: `PurchaseResponse` with details of the transaction.
+
+        - **GET /balance**:
+            Retrieves the balance of the user's wallet.
+            Permissions: User must be authenticated.
+            Response: `BalanceResponse` with the current wallet balance.
+    """
     router = APIRouter(prefix="/api/v1/wallet", tags=["Wallet Operations"])
 
     @router.post("/deposit", response_model=DepositResponse, status_code=status.HTTP_201_CREATED,

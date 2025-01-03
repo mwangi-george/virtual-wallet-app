@@ -15,9 +15,25 @@ origins = [
 
 
 def create_app_entrypoint() -> FastAPI:
-    """ Create FastAPI app entry point """
+    """
+    Create and configure the FastAPI application entry point.
 
-    app = FastAPI(
+    This function initializes the FastAPI application with the following features:
+    - **Metadata**: Provides application title, description, version, and contact/license information.
+    - **CORS Middleware**: Configures Cross-Origin Resource Sharing (CORS) to allow all origins, methods, headers,
+      and credentials for maximum compatibility.
+    - **Routers**: Includes the following routers:
+        - `auth_router`: Handles authentication-related routes.
+        - `wallet_router`: Manages wallet-related functionality (e.g., deposits, withdrawals, and transfers).
+        - `analytics_router`: Provides spending analytics and expense categorization routes.
+        - `user_router`: Handles user-specific routes.
+        - `admin_router`: Manages administrative routes.
+
+    Returns:
+        FastAPI: The configured FastAPI application instance.
+    """
+
+    entry_point = FastAPI(
         title="Virtual Wallet System",
         description=f"A backend service that enables users to manage their finances by depositing, "
                     f"transferring, and withdrawing funds. Coupled with spending analytics, "
@@ -35,7 +51,7 @@ def create_app_entrypoint() -> FastAPI:
     )
 
     # Configure Cross Origin Resource Sharing
-    app.add_middleware(
+    entry_point.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
         allow_credentials=True,
@@ -44,13 +60,13 @@ def create_app_entrypoint() -> FastAPI:
     )
 
     # Include the routers to the entry point
-    app.include_router(auth_router())
-    app.include_router(wallet_router())
-    app.include_router(analytics_router())
-    app.include_router(user_router())
-    app.include_router(admin_router())
+    entry_point.include_router(auth_router())
+    entry_point.include_router(wallet_router())
+    entry_point.include_router(analytics_router())
+    entry_point.include_router(user_router())
+    entry_point.include_router(admin_router())
 
-    return app
+    return entry_point
 
 
 # instantiate the app

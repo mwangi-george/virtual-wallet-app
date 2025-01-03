@@ -8,6 +8,38 @@ from ..services.user import user_services
 
 
 def create_user_router() -> APIRouter:
+    """
+    Create and configure the user router for managing user account settings.
+
+    The user router provides endpoints for account management, including requesting account removal,
+    updating user profiles, and requesting password resets. These operations are restricted to
+    authenticated users.
+
+    Returns:
+        APIRouter: Configured router for user account settings.
+
+    Routes:
+        - **POST /request-account-removal**:
+            Allows users to request the removal of their account.
+            Parameters:
+                - `data` (RemoveAccountRequest): Details of the account removal request.
+            Permissions: User must be authenticated.
+            Response: `ConfirmAction` with a success message.
+
+        - **POST /update-profile**:
+            Updates the user's profile information.
+            Parameters:
+                - `data` (UpdateProfileRequest): The updated profile data.
+            Permissions: User must be authenticated.
+            Response: `ConfirmAction` with a success message.
+
+        - **POST /request-password-reset**:
+            Initiates a password reset process for the user.
+            Parameters:
+                - `bg_tasks` (BackgroundTasks): Background tasks for asynchronous processing.
+            Permissions: User must be authenticated.
+            Response: `ConfirmAction` with a success message.
+    """
     router = APIRouter(prefix="/api/v1/users/manage-account", tags=["User Account Settings"])
 
     @router.post('/request-account-removal', response_model=ConfirmAction, status_code=status.HTTP_200_OK)
