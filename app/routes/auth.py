@@ -42,6 +42,13 @@ def create_auth_router() -> APIRouter:
            Permissions: Open to all.
            Response: `TokenData` with access and refresh tokens.
 
+       - **POST /request-password-reset**:
+            Initiates a password reset process for the user.
+            Parameters:
+                - `bg_tasks` (BackgroundTasks): Background tasks for asynchronous processing.
+            Permissions: User must be authenticated.
+            Response: `ConfirmAction` with a success message.
+
        - **GET /forms/password-reset**:
            Serves an HTML form for password reset.
            Permissions: Open to all.
@@ -93,6 +100,12 @@ def create_auth_router() -> APIRouter:
     async def login(user_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
         token_data = await auth_services.login_user(user_data.username, user_data.password, db)
         return token_data
+
+    @router.post('/request-password-reset', response_model=ConfirmAction, status_code=status.HTTP_201_CREATED)
+    async def request_password_reset(email: str, bg_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)):
+        response = await auth_services.process_password_reset_request(email, db, bg_tasks)
+        response_formatted = ConfirmAction(message=response)
+        return response_formatted
 
     @router.get("/forms/password-reset", response_class=HTMLResponse, status_code=status.HTTP_200_OK,
                 include_in_schema=False)

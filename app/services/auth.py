@@ -200,6 +200,51 @@ class AuthServices:
         return {"access_token": access_token, "token_type": "Bearer"}
 
     @staticmethod
+    async def process_password_reset_request(email: str, db: AsyncSession, bg_tasks: BackgroundTasks):
+        """
+        Processes a password reset request for a user.
+
+        This method is responsible for handling a user's password reset request by generating a token for the
+        password reset link, sending the reset link to the user's email, and scheduling the email to be sent.
+
+        Args:
+            email (str): The user who has requested a password reset.
+            db (AsyncSession): The database session to query user data.
+            bg_tasks (BackgroundTasks): The background tasks to handle asynchronous operations like sending emails.
+
+        Raises:
+            HTTPException: If the use is not found or if there is an error during the process.
+
+        Returns:
+            str: A message confirming that the password reset request has been received and processed.
+        """
+        user = await security.get_user(email, db)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        try:
+            token = security.create_access_token({"sub": user.email})
+            reset_link = f"{settings.BACKEND_DOMAIN}/api/v1/auth/forms/password-reset?token={token}"
+            user_name = user.name if user.name else user.email
+
+            bg_tasks.add_task(
+                email_services.send_email_with_brevo,
+                recipient=user.email,
+                subject="Password reset request",
+                body=email_services.generate_password_reset_email_body(user_name, reset_link)
+            )
+            return f"Password reset request received. A token has been sent to {user.email}."
+        except Exception as e:
+            logger.error(e)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to process request. Please contact support."
+            )
+
+    @staticmethod
     async def update_user_password(data: UpdateUserPassword, db: AsyncSession):
         """
         Updates the user's password based on the provided token and new password.

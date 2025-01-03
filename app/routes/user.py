@@ -32,13 +32,6 @@ def create_user_router() -> APIRouter:
                 - `data` (UpdateProfileRequest): The updated profile data.
             Permissions: User must be authenticated.
             Response: `ConfirmAction` with a success message.
-
-        - **POST /request-password-reset**:
-            Initiates a password reset process for the user.
-            Parameters:
-                - `bg_tasks` (BackgroundTasks): Background tasks for asynchronous processing.
-            Permissions: User must be authenticated.
-            Response: `ConfirmAction` with a success message.
     """
     router = APIRouter(prefix="/api/v1/users/manage-account", tags=["User Account Settings"])
 
@@ -55,12 +48,6 @@ def create_user_router() -> APIRouter:
                              user: User = Depends(security.get_current_user),
                              db: AsyncSession = Depends(get_db)):
         response = await user_services.update_user_profile(data, user, db)
-        response_formatted = ConfirmAction(message=response)
-        return response_formatted
-
-    @router.post('/request-password-reset', response_model=ConfirmAction, status_code=status.HTTP_201_CREATED)
-    async def request_password_reset(bg_tasks: BackgroundTasks, user: User = Depends(security.get_current_user)):
-        response = await user_services.process_password_reset_request(user, bg_tasks)
         response_formatted = ConfirmAction(message=response)
         return response_formatted
 
