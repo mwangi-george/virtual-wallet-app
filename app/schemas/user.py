@@ -15,12 +15,14 @@ class RemoveAccountRequest(BaseModel):
 
 
 class UpdateProfileRequest(BaseModel):
-    name: str = Field(..., min_length=3, max_length=100)
+    updated_name: str = Field(..., min_length=3, max_length=100)
+    updated_password: str = Field(..., min_length=4, max_length=100)
 
     class Config:
         from_attributes = True
         json_schema_extra = {
             "example": {
-                "name": "David Kai",
+                "updated_name": "David Kai",
+                "updated_password": "nmlp",
             }
         }

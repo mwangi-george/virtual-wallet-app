@@ -85,8 +85,8 @@ class UserServices:
         """
         Updates the profile information of a user.
 
-        This method allows users to update their profile details, such as their name. The changes are saved
-        to the database, and the updated user data is refreshed.
+        This method allows users to update their profile details, such as their name and password.
+        The changes are saved to the database, and the updated user data is refreshed.
 
         Args:
             data (UpdateProfileRequest): The new profile data to be updated for the user.
@@ -100,7 +100,8 @@ class UserServices:
             str: A message confirming that the user's profile has been successfully updated.
         """
         try:
-            user.name = data.name
+            user.name = data.updated_name
+            user.password_hash = security.get_password_hash(data.updated_password)
             await db.commit()
             await db.refresh(user)
             return "User profile updated successfully"
