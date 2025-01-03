@@ -1,1 +1,1 @@
-from .models import Base, User, Wallet, Transaction, AccountRemovalRequest, Task
+from .models import Base, User, Wallet, Transaction, AccountRemovalRequest
