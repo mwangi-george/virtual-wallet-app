@@ -46,7 +46,7 @@ def create_auth_router() -> APIRouter:
             Initiates a password reset process for the user.
             Parameters:
                 - `bg_tasks` (BackgroundTasks): Background tasks for asynchronous processing.
-            Permissions: User must be authenticated.
+            Permissions: Open to all.
             Response: `ConfirmAction` with a success message.
 
        - **GET /forms/password-reset**:
